@@ -13,26 +13,20 @@ import { PORT, MONGO_DB_URL } from "./config/config";
 
 
 const app = express();
-
+const __dirnamePath = path.resolve(); 
 
 
 app.use(cors({
   origin: "http://localhost:3000", 
 }));
-
 app.use(express.json());
 
 
 
 
 mongoose.connect(MONGO_DB_URL)
-  .then(() => {
-    console.log("✅ MongoDB connected");
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-  });
-
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 
 
@@ -40,8 +34,6 @@ mongoose.connect(MONGO_DB_URL)
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const clients = new Set<WebSocket>();
-
-
 
 wss.on("connection", (ws) => {
   console.log("🔌 Client connected via WebSocket");
@@ -80,8 +72,17 @@ app.get("/api/events", async (_req, res) => {
 
 
 
-const __dirnamePath = path.resolve(); 
+app.get("/", (_req, res) => {
+  res.send("🚀 SaaS Analytics Server ");
+});
+
+
+
+
+
 app.use(express.static(path.join(__dirnamePath, "client/build")));
+
+
 
 app.get("*", (_req, res) => {
   res.sendFile(path.join(__dirnamePath, "client/build", "index.html"));
@@ -91,5 +92,5 @@ app.get("*", (_req, res) => {
 
 
 server.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server at http://localhost:${PORT}`);
 });
