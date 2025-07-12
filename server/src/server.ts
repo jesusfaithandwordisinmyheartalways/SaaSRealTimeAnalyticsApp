@@ -5,37 +5,63 @@ import mongoose from "mongoose";
 import cors from "cors";
 import path from "path";
 import fs from "fs";
+import dotenv from "dotenv";
 import EventModel from "./models/Event";
 import generateRandomEvent from "./events/event";
-import { UserEvent } from "./types/interface";
-import { PORT, MONGO_DB_URL } from "./config/config";
+
+
+
+
+dotenv.config();
+
+
+
 
 const app = express();
 
 
 
 
+
 app.use(cors({
-  origin: "http://localhost:3001", 
+  origin: "http://localhost:3000", // You can change this to your deployed client URL
 }));
+
+
 
 app.use(express.json());
 
 
+app.get("/", (_req, res) => {
+  res.send("✅ Backend Server is live");
+});
 
-mongoose.connect(MONGO_DB_URL)
+
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+
+
+
+// ✅ Connect to MongoDB
+const mongoURL = process.env.MONGO_DB_URL;
+if (!mongoURL) {
+  throw new Error(" MONGO_DB_URL is not defined in .env");
+}
+
+
+
+mongoose.connect(mongoURL)
   .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+  .catch((err) => console.error(" MongoDB connection error:", err));
 
 
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-
 const clients = new Set<WebSocket>();
-
-
-
 
 wss.on("connection", (ws) => {
   console.log("🔌 Client connected via WebSocket");
@@ -46,6 +72,8 @@ wss.on("connection", (ws) => {
     clients.delete(ws);
   });
 });
+
+
 
 setInterval(async () => {
   const event = generateRandomEvent();
@@ -62,6 +90,7 @@ setInterval(async () => {
 
 
 
+
 app.get("/api/events", async (_req, res) => {
   const events = await EventModel.find().sort({ timestamp: 1 }).limit(500);
   res.json(events);
@@ -69,29 +98,27 @@ app.get("/api/events", async (_req, res) => {
 
 
 
-const buildPath = path.join(__dirname, "../client/build");
 
+const buildPath = path.join(__dirname, "../client/build");
 if (fs.existsSync(buildPath)) {
   app.use(express.static(buildPath));
 
-  app.get("/", (_req, res) => {
-    res.sendFile(path.join(buildPath, "index.html"));
-  });
-
   app.get("*", (_req, res) => {
     res.sendFile(path.join(buildPath, "index.html"));
-  });
-} else {
-
-
-  app.get("/", (_req, res) => {
-    res.send("Server. Client not built.");
   });
 }
 
 
 
 
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+const port = process.env.PORT;
+if (!port) {
+  throw new Error(" PORT is not defined in .env");
+}
+
+
+
+
+server.listen(port, () => {
+  console.log(`🚀 Server is active on port ${port}`);
 });
