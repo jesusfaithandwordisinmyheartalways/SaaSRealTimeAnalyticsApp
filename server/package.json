@@ -2,7 +2,8 @@
   "name": "server",
   "version": "1.0.0",
   "scripts": {
-    "dev": "ts-node-dev src/server.ts"
+    "dev": "ts-node-dev src/server.ts",
+    "start": "ts-node src/server.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
