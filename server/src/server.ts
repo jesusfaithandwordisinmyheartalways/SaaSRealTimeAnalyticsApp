@@ -4,23 +4,22 @@ import WebSocket from "ws";
 import mongoose from "mongoose";
 import cors from "cors";
 import path from "path";
-
+import fs from "fs";
 import EventModel from "./models/Event";
 import generateRandomEvent from "./events/event";
 import { UserEvent } from "./types/interface";
 import { PORT, MONGO_DB_URL } from "./config/config";
 
-
-
 const app = express();
-const __dirnamePath = path.resolve(); 
+
+
 
 
 app.use(cors({
-  origin: "http://localhost:3000", 
+  origin: "http://localhost:3001", 
 }));
-app.use(express.json());
 
+app.use(express.json());
 
 
 
@@ -30,10 +29,13 @@ mongoose.connect(MONGO_DB_URL)
 
 
 
-
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+
 const clients = new Set<WebSocket>();
+
+
+
 
 wss.on("connection", (ws) => {
   console.log("🔌 Client connected via WebSocket");
@@ -44,9 +46,6 @@ wss.on("connection", (ws) => {
     clients.delete(ws);
   });
 });
-
-
-
 
 setInterval(async () => {
   const event = generateRandomEvent();
@@ -63,7 +62,6 @@ setInterval(async () => {
 
 
 
-
 app.get("/api/events", async (_req, res) => {
   const events = await EventModel.find().sort({ timestamp: 1 }).limit(500);
   res.json(events);
@@ -71,26 +69,29 @@ app.get("/api/events", async (_req, res) => {
 
 
 
+const buildPath = path.join(__dirname, "../client/build");
 
-app.get("/", (_req, res) => {
-  res.send("🚀 SaaS Analytics Server ");
-});
+if (fs.existsSync(buildPath)) {
+  app.use(express.static(buildPath));
+
+  app.get("/", (_req, res) => {
+    res.sendFile(path.join(buildPath, "index.html"));
+  });
+
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(buildPath, "index.html"));
+  });
+} else {
 
 
-
-
-
-app.use(express.static(path.join(__dirnamePath, "client/build")));
-
-
-
-app.get("*", (_req, res) => {
-  res.sendFile(path.join(__dirnamePath, "client/build", "index.html"));
-});
+  app.get("/", (_req, res) => {
+    res.send("Server. Client not built.");
+  });
+}
 
 
 
 
 server.listen(PORT, () => {
-  console.log(`🚀 Server at http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
