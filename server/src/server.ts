@@ -104,13 +104,20 @@ app.get("/api/events", async (_req, res) => {
 
 
 const buildPath = path.join(__dirname, "../client/build");
-if (fs.existsSync(buildPath)) {
-  app.use(express.static(buildPath));
 
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(buildPath, "index.html"));
-  });
-}
+app.use(express.static(buildPath));
+
+app.get("*", (req, res) => {
+  const indexHtmlPath = path.join(buildPath, "index.html");
+
+  if (fs.existsSync(indexHtmlPath)) {
+    res.sendFile(indexHtmlPath);
+  } else {
+    res.status(404).send("Build not found. Please rebuild the client.");
+  }
+});
+
+
 
 
 
