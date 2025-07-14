@@ -107,7 +107,7 @@ const buildPath = path.join(__dirname, "../client/build");
 
 app.use(express.static(buildPath));
 
-app.get("*", (req, res) => {
+app.get("/*", (_req, res) => {
   const indexHtmlPath = path.join(buildPath, "index.html");
 
   if (fs.existsSync(indexHtmlPath)) {
@@ -116,7 +116,6 @@ app.get("*", (req, res) => {
     res.status(404).send("Build not found. Please rebuild the client.");
   }
 });
-
 
 
 
