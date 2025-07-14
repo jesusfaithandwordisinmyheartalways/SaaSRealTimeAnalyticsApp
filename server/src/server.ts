@@ -9,27 +9,21 @@ import dotenv from "dotenv";
 import EventModel from "./models/Event";
 import generateRandomEvent from "./events/event";
 
-
-
-
 dotenv.config();
-
-
-
 
 const app = express();
 
 
 
 
-
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://saasrealtimeanalyticsappclient.onrender.com",
-  ],
-    credentials: true
-}));
+app.use( cors({
+    origin: [
+      "http://localhost:3000",
+      "https://saasrealtimeanalyticsappclient.onrender.com",
+    ],
+    credentials: true,
+  })
+);
 
 
 
@@ -37,30 +31,23 @@ app.use(express.json());
 
 
 app.get("/", (_req, res) => {
-  res.send(" Backend Server is live");
+  res.send("Backend Server is live");
 });
-
-
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
 
-
-
-// ✅ Connect to MongoDB
 const mongoURL = process.env.MONGO_DB_URL;
 if (!mongoURL) {
-  throw new Error(" MONGO_DB_URL is not defined in .env");
+  throw new Error("MONGO_DB_URL is not defined in .env");
 }
 
-
-
-mongoose.connect(mongoURL)
-  .then(() => console.log(" MongoDB connected"))
-  .catch((err) => console.error(" MongoDB connection error:", err));
-
+mongoose
+  .connect(mongoURL)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 
 const server = http.createServer(app);
@@ -68,15 +55,14 @@ const wss = new WebSocket.Server({ server });
 const clients = new Set<WebSocket>();
 
 wss.on("connection", (ws) => {
-  console.log("🔌 Client connected via WebSocket");
+  console.log("🔌 WebSocket client connected");
   clients.add(ws);
 
   ws.on("close", () => {
-    console.log("🔌 Client disconnected");
+    console.log("🔌 WebSocket client disconnected");
     clients.delete(ws);
   });
 });
-
 
 
 setInterval(async () => {
@@ -93,8 +79,6 @@ setInterval(async () => {
 }, 2000);
 
 
-
-
 app.get("/api/events", async (_req, res) => {
   const events = await EventModel.find().sort({ timestamp: 1 }).limit(500);
   res.json(events);
@@ -105,30 +89,21 @@ app.get("/api/events", async (_req, res) => {
 
 const buildPath = path.join(__dirname, "../client/build");
 
-app.use(express.static(buildPath));
+if (fs.existsSync(buildPath)) {
+  app.use(express.static(buildPath));
 
-app.get("/*", (_req, res) => {
-  const indexHtmlPath = path.join(buildPath, "index.html");
-
-  if (fs.existsSync(indexHtmlPath)) {
-    res.sendFile(indexHtmlPath);
-  } else {
-    res.status(404).send("Build not found. Please rebuild the client.");
-  }
-});
-
-
-
-
-
-const port = process.env.PORT;
-if (!port) {
-  throw new Error(" PORT is not defined in .env");
+  app.get("/*", (_req, res) => {
+    res.sendFile(path.join(buildPath, "index.html"));
+  });
+} else {
+  console.warn("⚠️ client/build not found. Skipping static file serving.");
 }
 
 
 
 
+const port = process.env.PORT || 3001;
+
 server.listen(port, () => {
-  console.log(` Server is active on port ${port}`);
+  console.log(` Server listening on port ${port}`);
 });
