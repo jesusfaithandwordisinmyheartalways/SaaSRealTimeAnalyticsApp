@@ -24,7 +24,11 @@ const app = express();
 
 
 app.use(cors({
-  origin: "http://localhost:3000", // You can change this to your deployed client URL
+  origin: [
+    "http://localhost:3000",
+    "https://saasrealtimeanalyticsappclient.onrender.com",
+  ],
+    credentials: true
 }));
 
 
@@ -33,7 +37,7 @@ app.use(express.json());
 
 
 app.get("/", (_req, res) => {
-  res.send("✅ Backend Server is live");
+  res.send(" Backend Server is live");
 });
 
 
@@ -54,7 +58,7 @@ if (!mongoURL) {
 
 
 mongoose.connect(mongoURL)
-  .then(() => console.log("✅ MongoDB connected"))
+  .then(() => console.log(" MongoDB connected"))
   .catch((err) => console.error(" MongoDB connection error:", err));
 
 
@@ -120,5 +124,5 @@ if (!port) {
 
 
 server.listen(port, () => {
-  console.log(`🚀 Server is active on port ${port}`);
+  console.log(` Server is active on port ${port}`);
 });
