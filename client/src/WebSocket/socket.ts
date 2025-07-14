@@ -1,23 +1,13 @@
 
 
 
+const isLocalhost = window.location.hostname === "localhost";
+const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+
+const webSocketUrl = isLocalhost
+  ? `${protocol}://localhost:3001`
+  : `${protocol}://saasrealtimeanalyticsappserver.onrender.com`;
 
 
-
-
-
-const httpsProtocol = window.location.protocol === 'https ' ? 'wss' : 'ws';
- const httpsHostName =  window.location.hostname;
-
- let webSocketUrl = ''
-
- if(httpsHostName === 'localhost') {
-    webSocketUrl = `${httpsProtocol}://localhost:3001`
- } else {
-    webSocketUrl = `${httpsProtocol}://saasrealtimeanalyticsappserver.onrender.com`
- }
-
-
-
-
-export const socket = new WebSocket(webSocketUrl)
+  
+export const socket = new WebSocket(webSocketUrl);
