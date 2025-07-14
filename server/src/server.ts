@@ -16,11 +16,8 @@ const app = express();
 
 
 
-app.use( cors({
-    origin: [
-      "http://localhost:3000",
-      "https://saasrealtimeanalyticsappclient.onrender.com",
-    ],
+app.use(cors({
+    origin: [ "https://saasrealtimeanalyticsappclient.onrender.com" ],
     credentials: true,
   })
 );
